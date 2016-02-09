@@ -39,5 +39,5 @@
         <include layout="@layout/mdtp_date_picker_view_animator" />
     </LinearLayout>
 
-    <include layout="@layout/mdtp_done_button" />
+    <include layout="@layout/mdtp_done_button_date" />
 </LinearLayout>

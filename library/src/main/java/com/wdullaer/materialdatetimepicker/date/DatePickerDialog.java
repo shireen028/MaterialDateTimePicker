@@ -22,6 +22,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
@@ -44,6 +45,8 @@ import com.wdullaer.materialdatetimepicker.HapticFeedbackController;
 import com.wdullaer.materialdatetimepicker.R;
 import com.wdullaer.materialdatetimepicker.TypefaceHelper;
 import com.wdullaer.materialdatetimepicker.Utils;
+import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
+import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -87,6 +90,10 @@ public class DatePickerDialog extends DialogFragment implements
     private static final String KEY_OK_STRING = "ok_string";
     private static final String KEY_CANCEL_RESID = "cancel_resid";
     private static final String KEY_CANCEL_STRING = "cancel_string";
+    private static final String KEY_TIME_RESID = "time_resid";
+    private static final String KEY_TIME_STRING = "time_string";
+
+
 
 
     private static final int DEFAULT_START_YEAR = 1900;
@@ -100,6 +107,7 @@ public class DatePickerDialog extends DialogFragment implements
 
     private final Calendar mCalendar = Calendar.getInstance();
     private OnDateSetListener mCallBack;
+    private OnTimeListener mBack;
     private HashSet<OnDateChangedListener> mListeners = new HashSet<>();
     private DialogInterface.OnCancelListener mOnCancelListener;
     private DialogInterface.OnDismissListener mOnDismissListener;
@@ -131,9 +139,11 @@ public class DatePickerDialog extends DialogFragment implements
     private boolean mDismissOnPause = false;
     private int mDefaultView = MONTH_AND_DAY_VIEW;
     private int mOkResid = R.string.mdtp_ok;
+    private int mTimeResid= R.string.mdtp_time;
     private String mOkString;
     private int mCancelResid = R.string.mdtp_cancel;
     private String mCancelString;
+    private String mTimeString;
 
     private HapticFeedbackController mHapticFeedbackController;
 
@@ -144,6 +154,8 @@ public class DatePickerDialog extends DialogFragment implements
     private String mSelectDay;
     private String mYearPickerDescription;
     private String mSelectYear;
+
+
 
     /**
      * The callback used to indicate the user is done filling in the date.
@@ -166,6 +178,10 @@ public class DatePickerDialog extends DialogFragment implements
     public interface OnDateChangedListener {
 
         void onDateChanged();
+    }
+    public interface OnTimeListener {
+
+        void onTimeChanged();
     }
 
 
@@ -242,6 +258,8 @@ public class DatePickerDialog extends DialogFragment implements
         outState.putString(KEY_OK_STRING, mOkString);
         outState.putInt(KEY_CANCEL_RESID, mCancelResid);
         outState.putString(KEY_CANCEL_STRING, mCancelString);
+        outState.putInt(KEY_TIME_RESID, mTimeResid);
+        outState.putString(KEY_TIME_STRING, mTimeString);
     }
 
     @Override
@@ -283,6 +301,9 @@ public class DatePickerDialog extends DialogFragment implements
             mOkString = savedInstanceState.getString(KEY_OK_STRING);
             mCancelResid = savedInstanceState.getInt(KEY_CANCEL_RESID);
             mCancelString = savedInstanceState.getString(KEY_CANCEL_STRING);
+
+            mTimeResid = savedInstanceState.getInt(KEY_TIME_RESID);
+            mTimeString = savedInstanceState.getString(KEY_TIME_STRING);
         }
 
         final Activity activity = getActivity();
@@ -315,6 +336,21 @@ public class DatePickerDialog extends DialogFragment implements
         Animation animation2 = new AlphaAnimation(1.0f, 0.0f);
         animation2.setDuration(ANIMATION_DURATION);
         mAnimator.setOutAnimation(animation2);
+
+
+        Button timeB = (Button) view.findViewById(R.id.settime);
+        final boolean value=false;
+      timeB.setOnClickListener(new OnClickListener() {
+          @Override
+          public void onClick(View v) {
+              tryVibrate();
+              notifyOnTime();
+              dismiss();
+          }
+
+
+
+        });
 
         Button okButton = (Button) view.findViewById(R.id.ok);
         okButton.setOnClickListener(new OnClickListener() {
@@ -697,6 +733,11 @@ public class DatePickerDialog extends DialogFragment implements
     }
 
     @SuppressWarnings("unused")
+    public void setTimeListener(OnTimeListener listener1) {
+        mBack =  listener1;
+    }
+
+    @SuppressWarnings("unused")
     public void setOnCancelListener(DialogInterface.OnCancelListener onCancelListener) {
         mOnCancelListener = onCancelListener;
     }
@@ -918,6 +959,7 @@ public class DatePickerDialog extends DialogFragment implements
         mListeners.remove(listener);
     }
 
+
     @Override
     public void tryVibrate() {
         if(mVibrate) mHapticFeedbackController.tryVibrate();
@@ -929,4 +971,11 @@ public class DatePickerDialog extends DialogFragment implements
                     mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
         }
     }
+    public void notifyOnTime() {
+        if (mBack != null) {
+            mBack.onTimeChanged();
+        }
+
+    }
+
 }
